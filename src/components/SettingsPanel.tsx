@@ -47,22 +47,26 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     if (!newUrl) return;
     setError(null);
 
-    // Check if already exists
     if (sources.some((s) => s.url.toLowerCase() === newUrl.toLowerCase())) {
       setError(t.sourceExists);
       return;
     }
 
     setIsValidating(true);
+
     try {
-      const response = await fetch(
-        `/api/proxy?url=${encodeURIComponent(newUrl)}`,
-      );
-      if (!response.ok) throw new Error("Network response was not ok");
+      const response = await fetch(newUrl, {
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch");
+      }
 
       const data = await response.json();
 
-      // Basic validation of the JSON structure
       if (!data || !Array.isArray(data.downloads)) {
         throw new Error("Invalid JSON structure");
       }
@@ -73,13 +77,14 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         Math.floor(Math.random() * 16777215)
           .toString(16)
           .padStart(6, "0");
-      const name = data.name || "Source " + (sources.length + 1);
+
+      const name = data.name || `Source ${sources.length + 1}`;
 
       setSources([...sources, { id, url: newUrl, name, color }]);
       setNewUrl("");
       setIsAdding(false);
     } catch (err) {
-      console.error("Validation error:", err);
+      console.error(err);
       setError(t.invalidSource);
     } finally {
       setIsValidating(false);

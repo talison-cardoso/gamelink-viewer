@@ -60,20 +60,30 @@ export default function App() {
   const fetchSource = useCallback(
     async (source: Source) => {
       try {
-        const response = await fetch(
-          `/api/proxy?url=${encodeURIComponent(source.url)}`,
-        );
-        if (!response.ok) throw new Error("Failed to fetch");
+        const response = await fetch(source.url, {
+          headers: {
+            Accept: "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch");
+        }
+
         const data: SourceData = await response.json();
         const finalName = data.name || source.name;
 
-        // Update the source name in the sources list if it changed
+        // Atualiza nome se mudou
         if (data.name && data.name !== source.name) {
           setSources((prev) =>
             prev.map((s) =>
-              s.id === source.id ? { ...s, name: data.name! } : s,
+              s.id === source.id ? { ...s, name: data.name } : s,
             ),
           );
+        }
+
+        if (!Array.isArray(data.downloads)) {
+          throw new Error("Invalid JSON structure");
         }
 
         return data.downloads.map((item) => ({
