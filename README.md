@@ -11,8 +11,9 @@ Ela apenas consome arquivos JSON públicos e organiza os links de forma estrutur
 
 ![Local Storage](https://img.shields.io/badge/Data-Local_Storage-orange?style=flat-square&logo=icloud&logoColor=white)
 ![I18N](https://img.shields.io/badge/Language-PT--BR%20%7C%20EN%20%7C%20ES-green?style=flat-square&logo=translate&logoColor=white)
-
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
+![AI-Generated](https://img.shields.io/badge/Generated_by-AI-7433ff?style=flat-square&logo=openai&logoColor=white)
+![Google AI Studio](https://img.shields.io/badge/Developed_via-Google_AI_Studio-4285F4?style=flat-square&logo=google-gemini&logoColor=white)
 
 ## ⚠️ Aviso Legal (Disclaimer)
 
@@ -78,6 +79,3 @@ cd gamelink-viewer
 npm install
 npm run dev
 ```
-
-![AI-Generated](https://img.shields.io/badge/Generated_by-AI-7433ff?style=flat-square&logo=openai&logoColor=white)
-![Google AI Studio](https://img.shields.io/badge/Developed_via-Google_AI_Studio-4285F4?style=flat-square&logo=google-gemini&logoColor=white)
