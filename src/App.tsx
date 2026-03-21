@@ -343,7 +343,7 @@ export default function App() {
               <div className="flex justify-center">
                 <button
                   onClick={loadMore}
-                  className="btn btn-primary btn-wide shadow-xl shadow-primary/20 group py-2"
+                  className="btn btn-primary shadow-xl shadow-primary/20 group py-2"
                 >
                   {settings.itemsPerPage === "all"
                     ? t.loadAll.replace(
