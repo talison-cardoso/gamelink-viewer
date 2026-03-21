@@ -13,8 +13,8 @@ import {
   RefreshCw,
   Globe,
   AlertTriangle,
-  ShieldAlert,
   Layout,
+  FileJson,
 } from "lucide-react";
 
 interface SettingsPanelProps {
@@ -47,26 +47,22 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     if (!newUrl) return;
     setError(null);
 
+    // Check if already exists
     if (sources.some((s) => s.url.toLowerCase() === newUrl.toLowerCase())) {
       setError(t.sourceExists);
       return;
     }
 
     setIsValidating(true);
-
     try {
-      const response = await fetch(newUrl, {
-        headers: {
-          Accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch");
-      }
+      const response = await fetch(
+        `/api/proxy?url=${encodeURIComponent(newUrl)}`,
+      );
+      if (!response.ok) throw new Error("Network response was not ok");
 
       const data = await response.json();
 
+      // Basic validation of the JSON structure
       if (!data || !Array.isArray(data.downloads)) {
         throw new Error("Invalid JSON structure");
       }
@@ -77,18 +73,58 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         Math.floor(Math.random() * 16777215)
           .toString(16)
           .padStart(6, "0");
-
-      const name = data.name || `Source ${sources.length + 1}`;
+      const name = data.name || "Source " + (sources.length + 1);
 
       setSources([...sources, { id, url: newUrl, name, color }]);
       setNewUrl("");
       setIsAdding(false);
     } catch (err) {
-      console.error(err);
+      console.error("Validation error:", err);
       setError(t.invalidSource);
     } finally {
       setIsValidating(false);
     }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setError(null);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+        if (!data || !Array.isArray(data.downloads)) {
+          throw new Error("Invalid JSON structure");
+        }
+
+        const id = crypto.randomUUID();
+        const color =
+          "#" +
+          Math.floor(Math.random() * 16777215)
+            .toString(16)
+            .padStart(6, "0");
+        const name = data.name || file.name.replace(".json", "");
+
+        setSources([
+          ...sources,
+          {
+            id,
+            url: "local://" + file.name,
+            name,
+            color,
+            isLocal: true,
+            localData: data,
+          },
+        ]);
+        setIsAdding(false);
+      } catch (err) {
+        console.error("File read error:", err);
+        setError(t.invalidSource);
+      }
+    };
+    reader.readAsText(file);
   };
 
   const removeSource = (id: string) => {
@@ -97,7 +133,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-base-100 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-base-300 flex flex-col h-150 max-h-[90vh]">
+      <div className="bg-base-100 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-base-300 flex flex-col h-[600px] max-h-[90vh]">
         <div className="p-4 border-b border-base-300 flex justify-between items-center bg-base-200 shrink-0">
           <div className="flex items-center gap-2 font-bold">
             <SettingsIcon size={18} />
@@ -151,7 +187,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     <input
                       type="url"
                       placeholder="https://.../data.json"
-                      className={`input w-full pl-10 bg-base-200 border-none focus:ring-2 focus:ring-primary/45 transition-all focus-within:outline-primary/70 focus-within:outline-2 focus-within:outline-offset-4${error ? "input-error" : ""}`}
+                      className={`input input-bordered flex-1 ${error ? "input-error" : ""}`}
                       value={newUrl}
                       onChange={(e) => {
                         setNewUrl(e.target.value);
@@ -182,6 +218,24 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                       {t.validating}
                     </div>
                   )}
+                  <div className="divider text-[10px] opacity-40 uppercase font-bold">
+                    {t.or}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <input
+                      type="file"
+                      accept=".json"
+                      className="hidden"
+                      id="json-upload"
+                      onChange={handleFileUpload}
+                    />
+                    <label
+                      htmlFor="json-upload"
+                      className="btn btn-outline btn-sm gap-2 w-full"
+                    >
+                      <FileJson size={16} /> {t.importFile}
+                    </label>
+                  </div>
                 </div>
               )}
 
@@ -196,15 +250,26 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                         className="w-3 h-3 rounded-full shrink-0"
                         style={{ backgroundColor: source.color }}
                       ></div>
-                      <span className="font-bold truncate">{source.name}</span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold truncate text-sm">
+                          {source.name}
+                        </span>
+                        {source.isLocal && (
+                          <span className="text-[9px] uppercase tracking-widest opacity-40 font-black">
+                            Local File
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex gap-1">
-                      <button
-                        onClick={() => onRefresh(source.id)}
-                        className="btn btn-ghost btn-sm btn-circle text-info"
-                      >
-                        <RefreshCw size={16} />
-                      </button>
+                      {!source.isLocal && (
+                        <button
+                          onClick={() => onRefresh(source.id)}
+                          className="btn btn-ghost btn-sm btn-circle text-info"
+                        >
+                          <RefreshCw size={16} />
+                        </button>
+                      )}
                       <button
                         onClick={() => removeSource(source.id)}
                         className="btn btn-ghost btn-sm btn-circle text-error"

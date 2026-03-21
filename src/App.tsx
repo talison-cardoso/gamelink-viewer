@@ -60,30 +60,27 @@ export default function App() {
   const fetchSource = useCallback(
     async (source: Source) => {
       try {
-        const response = await fetch(source.url, {
-          headers: {
-            Accept: "application/json",
-          },
-        });
+        let data: SourceData;
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch");
+        if (source.isLocal && source.localData) {
+          data = source.localData;
+        } else {
+          const response = await fetch(
+            `/api/proxy?url=${encodeURIComponent(source.url)}`,
+          );
+          if (!response.ok) throw new Error("Failed to fetch");
+          data = await response.json();
         }
 
-        const data: SourceData = await response.json();
         const finalName = data.name || source.name;
 
-        // Atualiza nome se mudou
+        // Update the source name in the sources list if it changed
         if (data.name && data.name !== source.name) {
           setSources((prev) =>
             prev.map((s) =>
-              s.id === source.id ? { ...s, name: data.name } : s,
+              s.id === source.id ? { ...s, name: data.name! } : s,
             ),
           );
-        }
-
-        if (!Array.isArray(data.downloads)) {
-          throw new Error("Invalid JSON structure");
         }
 
         return data.downloads.map((item) => ({
@@ -196,28 +193,17 @@ export default function App() {
     >
       {/* Header */}
       <header
-        className={`sticky top-0 z-40 bg-base-100/60 border-b border-base-300 backdrop-blur-lg transition-all duration-300 ${
-          scrolled ? "py-2" : "py-4"
-        }`}
+        className={`sticky top-0 z-40 bg-base-100/80 backdrop-blur-md border-b border-base-300 transition-all duration-300 ${scrolled ? "py-1 shadow-md" : "py-3"}`}
       >
         <div
-          className={`container mx-auto px-4 flex flex-col md:flex-row items-center justify-between transition-all duration-300 ${
-            scrolled ? "gap-2" : "gap-4"
-          }  ${containerClass}`}
+          className={`container mx-auto px-4 flex flex-col md:flex-row gap-4 items-center justify-between ${containerClass}`}
         >
-          {/* Logo / Título */}
           <div
-            className={`flex items-center gap-3 transition-[opacity,transform] duration-300
-            ${
-              scrolled
-                ? "opacity-0 -translate-y-2 hidden md:flex md:opacity-100 md:translate-y-0"
-                : "opacity-100 translate-y-0 flex"
-            }`}
+            className={`flex items-center gap-3 transition-all duration-300 ${scrolled ? "md:opacity-100 opacity-0 h-0 md:h-auto overflow-hidden" : "opacity-100"}`}
           >
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-content shadow-lg shadow-primary/20">
               <LayoutGrid size={24} />
             </div>
-
             <div className="hidden sm:block">
               <h1 className="text-xl font-black tracking-tighter leading-none">
                 {t.appName}
@@ -228,33 +214,24 @@ export default function App() {
             </div>
           </div>
 
-          {/* Search */}
           <div
-            className={`flex-1 w-full relative group transition-all duration-300
-            ${scrolled ? "max-w-full md:max-w-2xl" : "max-w-xl"}`}
+            className={`flex-1 max-w-xl w-full relative group transition-all duration-300 ${scrolled ? "md:max-w-2xl" : ""}`}
           >
             <Search
-              className="absolute left-3 z-10 top-1/2 -translate-y-1/2 text-base-content/50 transition-colors group-focus-within:text-primary/70"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/50 transition-colors group-focus-within:text-primary"
               size={18}
             />
-
             <input
               type="text"
               placeholder={t.search}
-              className="input w-full pl-10 bg-base-200 border-none focus:ring-2 focus:ring-primary/45 transition-all focus-within:outline-primary/70 focus-within:outline-2 focus-within:outline-offset-4"
+              className="input w-full pl-10 transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
-          {/* Botões direita */}
           <div
-            className={`flex items-center gap-2 transition-[opacity,transform] duration-300
-            ${
-              scrolled
-                ? "opacity-0 translate-y-2 hidden md:flex md:opacity-100 md:translate-y-0"
-                : "opacity-100 translate-y-0 flex"
-            }`}
+            className={`flex items-center gap-2 transition-all duration-300 ${scrolled ? "md:opacity-100 opacity-0 w-0 md:w-auto overflow-hidden" : "opacity-100"}`}
           >
             <button
               onClick={() => setShowSettings(true)}
@@ -262,7 +239,6 @@ export default function App() {
             >
               <SettingsIcon size={20} />
             </button>
-
             {isLoading && (
               <span className="loading loading-spinner loading-sm text-primary"></span>
             )}
@@ -275,13 +251,23 @@ export default function App() {
       >
         {sources.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-12 animate-in fade-in duration-500">
-            <div className="relative flex flex-col my-30 items-center justify-center">
-              <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full"></div>
-              <Monitor className="opacity-10 size-32 stroke-[0.5]" />
-              <h2 className="text-3xl font-bold tracking- opacity-20 uppercase">
+            <div className="w-full max-w-4xl border border-base-300 rounded-full py-3 px-6 opacity-30 flex items-center gap-3">
+              <Monitor size={18} />
+              <span className="text-sm font-bold tracking-widest uppercase">
                 {t.selectSource}
-              </h2>
+              </span>
             </div>
+
+            <div className="relative">
+              <Monitor size={120} className="opacity-10" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-24 h-24 bg-primary/5 blur-3xl rounded-full"></div>
+              </div>
+            </div>
+
+            <h2 className="text-3xl font-black tracking-tighter opacity-20 uppercase">
+              {t.selectSource}
+            </h2>
 
             <div className="card bg-base-200/40 backdrop-blur-xl border border-base-300 shadow-2xl max-w-md w-full p-8 space-y-6 items-center">
               <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
@@ -385,7 +371,7 @@ export default function App() {
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed bottom-6 left-6 right-6 md:left-auto md:w-md z-50"
+            className="fixed bottom-6 left-6 right-6 md:left-auto md:w-[450px] z-50"
           >
             <div className="alert bg-yellow-200 text-yellow-900 border-none shadow-2xl p-6 relative overflow-hidden rounded-3xl group cursor-default">
               <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-3">

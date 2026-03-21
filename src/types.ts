@@ -1,4 +1,4 @@
-export type Language = 'en' | 'pt' | 'es';
+export type Language = "en" | "pt" | "es";
 
 export interface DownloadItem {
   title: string;
@@ -16,11 +16,13 @@ export interface Source {
   url: string;
   color: string;
   lastFetched?: string;
+  isLocal?: boolean;
+  localData?: SourceData;
 }
 
 export interface Settings {
   theme: string;
-  itemsPerPage: number | 'all';
+  itemsPerPage: number | "all";
   columns: 1 | 2 | 3 | 4;
   widescreen: boolean;
   language: Language;
