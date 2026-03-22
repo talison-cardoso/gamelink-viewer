@@ -39,6 +39,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const [showLegalNotice, setShowLegalNotice] = useLocalStorage<boolean>(
     "nexusgrid_legal_notice",
     true,
@@ -82,10 +83,11 @@ export default function App() {
     }
   }, [sources, isSourcesLoaded]);
 
-  // Scroll listener for mobile header
+  // Scroll listener for mobile header and scroll to top
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
+      setShowScrollTop(window.scrollY > 400);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -228,20 +230,40 @@ export default function App() {
     <div
       className={`min-h-screen bg-base-100 text-base-content font-sans selection:bg-primary selection:text-primary-content`}
     >
+      <AnimatePresence>
+        {!isSourcesLoaded && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-base-100 flex flex-col items-center justify-center gap-4"
+          >
+            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-primary-content shadow-2xl shadow-primary/20 animate-bounce">
+              <LayoutGrid size={32} />
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <h2 className="text-xl font-black tracking-tighter">
+                {t.appName}
+              </h2>
+              <span className="loading loading-dots loading-md text-primary"></span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <header
-        className={`sticky top-0 z-40 bg-base-100/80 backdrop-blur-md border-b border-base-300 transition-all duration-300 ${scrolled ? "py-1 shadow-md" : "py-3"}`}
+        className={`sticky top-0 z-40 bg-base-100/80 backdrop-blur-md border-b border-base-300 transition-all duration-300 ${scrolled ? "py-1 shadow-md" : "py-2 sm:py-3"}`}
       >
         <div
-          className={`container mx-auto px-4 flex flex-col md:flex-row gap-4 items-center justify-between ${containerClass}`}
+          className={`container mx-auto px-4 flex flex-row gap-2 sm:gap-4 items-center justify-between ${containerClass}`}
         >
           <div
-            className={`flex items-center gap-3 transition-all duration-300 ${scrolled ? "md:opacity-100 opacity-0 h-0 md:h-auto overflow-hidden" : "opacity-100"}`}
+            className={`flex items-center gap-2 sm:gap-3 transition-all duration-300 ${scrolled ? "opacity-100" : "opacity-100"}`}
           >
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-content shadow-lg shadow-primary/20">
-              <LayoutGrid size={24} />
+            <div className="size-8 sm:size-10 mr-1 bg-primary rounded-lg sm:rounded-xl flex items-center justify-center text-primary-content shadow-lg shadow-primary/20 shrink-0">
+              <LayoutGrid className="sm:size-6 size-4" />
             </div>
-            <div className="hidden sm:block">
+            <div className="hidden lg:block">
               <h1 className="text-xl font-black tracking-tighter leading-none">
                 {t.appName}
               </h1>
@@ -252,33 +274,28 @@ export default function App() {
           </div>
 
           <div
-            className={`flex-1 max-w-xl w-full relative group transition-all duration-300 ${scrolled ? "md:max-w-2xl" : ""}`}
+            className={`flex-1 max-w-2xl relative group transition-all duration-300`}
           >
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/50 transition-colors group-focus-within:text-primary"
-              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/50 transition-colors group-focus-within:text-red-400"
+              size={16}
             />
             <input
               type="text"
               placeholder={t.search}
-              className="input w-full pl-10 transition-all"
+              className="input input-sm sm:input-md w-full pl-9 sm:pl-10 transition-all bg-base-200/50 border-none focus:bg-base-200"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
-          <div
-            className={`flex items-center gap-2 transition-all duration-300 ${scrolled ? "md:opacity-100 opacity-0 w-0 md:w-auto overflow-hidden" : "opacity-100"}`}
-          >
+          <div className={`flex items-center gap-1 sm:gap-2 shrink-0`}>
             <button
               onClick={() => setShowSettings(true)}
-              className="btn btn-ghost btn-circle"
+              className="btn btn-ghost btn-sm sm:btn-md btn-circle"
             >
-              <SettingsIcon size={20} />
+              <SettingsIcon className="size-4.5 sm:size-5" />
             </button>
-            {isLoading && (
-              <span className="loading loading-spinner loading-sm text-primary"></span>
-            )}
           </div>
         </div>
       </header>
@@ -288,23 +305,13 @@ export default function App() {
       >
         {sources.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-12 animate-in fade-in duration-500">
-            <div className="w-full max-w-4xl border border-base-300 rounded-full py-3 px-6 opacity-30 flex items-center gap-3">
-              <Monitor size={18} />
-              <span className="text-sm font-bold tracking-widest uppercase">
+            <div className="relative flex flex-col my-30 items-center justify-center">
+              <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full"></div>
+              <Monitor className="opacity-10 size-32 stroke-[0.5]" />
+              <h2 className="text-3xl font-bold tracking- opacity-20 uppercase">
                 {t.selectSource}
-              </span>
+              </h2>
             </div>
-
-            <div className="relative">
-              <Monitor size={120} className="opacity-10" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-24 h-24 bg-primary/5 blur-3xl rounded-full"></div>
-              </div>
-            </div>
-
-            <h2 className="text-3xl font-black tracking-tighter opacity-20 uppercase">
-              {t.selectSource}
-            </h2>
 
             <div className="card bg-base-200/40 backdrop-blur-xl border border-base-300 shadow-2xl max-w-md w-full p-8 space-y-6 items-center">
               <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
@@ -449,12 +456,19 @@ export default function App() {
       )}
 
       {/* Scroll to Top */}
-      <button
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="fixed bottom-6 right-6 btn btn-circle btn-primary shadow-2xl z-30"
-      >
-        <ArrowUp size={24} />
-      </button>
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.5, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5, y: 20 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-6 right-6 btn btn-circle btn-primary shadow-2xl z-30"
+          >
+            <ArrowUp size={24} />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

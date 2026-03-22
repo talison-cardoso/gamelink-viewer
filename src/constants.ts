@@ -23,7 +23,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       "This application is only a link renderer. We do not host, store or distribute any files or links. All content is fetched dynamically from JSON sources provided by the user.",
     howItWorks: "How it works",
     howItWorksDesc:
-      "Paste a JSON URL from your favorite source to render the download list instantly. Your sources are saved locally in your browser.",
+      "Paste a JSON URL or upload local JSON files from your favorite sources to render the download list instantly. Your sources are saved securely in your browser.",
     selectSource: "SELECT A SOURCE TO START",
     close: "Close",
     remove: "Remove",
@@ -62,7 +62,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       "Este aplicativo é apenas um renderizador de links. Não hospedamos, armazenamos ou distribuímos quaisquer arquivos ou links. Todo o conteúdo é obtido dinamicamente de fontes JSON fornecidas pelo usuário.",
     howItWorks: "Como funciona",
     howItWorksDesc:
-      "Cole uma URL JSON de sua fonte favorita para listar os downloads instantaneamente. Suas fontes são salvas localmente no seu navegador.",
+      "Cole uma URL JSON ou faça upload de arquivos JSON locais de suas fontes favoritas para listar os downloads instantaneamente. Suas fontes são salvas com segurança no seu navegador.",
     selectSource: "SELECIONE UMA FONTE PARA COMEÇAR",
     close: "Fechar",
     remove: "Remover",
@@ -100,7 +100,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       "Esta aplicación es solo un renderizador de enlaces. No alojamos, almacenamos ni distribuimos ningún archivo o enlace. Todo el contenido se obtiene dinámicamente de fuentes JSON proporcionadas por el usuario.",
     howItWorks: "Cómo funciona",
     howItWorksDesc:
-      "Pegue una URL JSON de su fuente favorita para listar las descargas al instante. Sus fuentes se guardan localmente en su navegador.",
+      "Pegue una URL JSON o suba archivos JSON locales de sus fuentes favoritas para listar las descargas al instante. Sus fuentes se guardan de forma segura en su navegador.",
     selectSource: "SELECCIONE UNA FUENTE PARA COMENZAR",
     close: "Cerrar",
     remove: "Eliminar",
