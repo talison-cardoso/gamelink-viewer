@@ -86,45 +86,67 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setError(null);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const data = JSON.parse(event.target?.result as string);
-        if (!data || !Array.isArray(data.downloads)) {
-          throw new Error("Invalid JSON structure");
-        }
+    const newSources: Source[] = [];
 
-        const id = crypto.randomUUID();
-        const color =
-          "#" +
-          Math.floor(Math.random() * 16777215)
-            .toString(16)
-            .padStart(6, "0");
-        const name = data.name || file.name.replace(".json", "");
+    const readFile = (file: File): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target?.result as string);
+            if (!data || !Array.isArray(data.downloads)) {
+              throw new Error("Invalid JSON structure");
+            }
 
-        setSources([
-          ...sources,
-          {
-            id,
-            url: "local://" + file.name,
-            name,
-            color,
-            isLocal: true,
-            localData: data,
-          },
-        ]);
+            const id = crypto.randomUUID();
+            const color =
+              "#" +
+              Math.floor(Math.random() * 16777215)
+                .toString(16)
+                .padStart(6, "0");
+            const name = data.name || file.name.replace(".json", "");
+
+            newSources.push({
+              id,
+              url: "local://" + file.name,
+              name,
+              color,
+              isLocal: true,
+              localData: data,
+            });
+            resolve();
+          } catch (err) {
+            console.error(`Error parsing ${file.name}:`, err);
+            resolve(); // Skip invalid files but continue with others
+          }
+        };
+        reader.onerror = () => reject(new Error(`Error reading ${file.name}`));
+        reader.readAsText(file);
+      });
+    };
+
+    try {
+      await Promise.all(
+        Array.from(files).map((file: any) => readFile(file as File)),
+      );
+      if (newSources.length > 0) {
+        setSources([...sources, ...newSources]);
         setIsAdding(false);
-      } catch (err) {
-        console.error("File read error:", err);
+      } else {
         setError(t.invalidSource);
       }
-    };
-    reader.readAsText(file);
+    } catch (err) {
+      console.error("File read error:", err);
+      setError(t.invalidSource);
+    }
+
+    // Reset input value
+    e.target.value = "";
   };
 
   const removeSource = (id: string) => {
@@ -225,6 +247,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                     <input
                       type="file"
                       accept=".json"
+                      multiple
                       className="hidden"
                       id="json-upload"
                       onChange={handleFileUpload}
