@@ -4,6 +4,7 @@ import { Settings, Source, DownloadItem, SourceData } from "./types";
 import { TRANSLATIONS } from "./constants";
 import { GameCard } from "./components/GameCard";
 import { SettingsPanel } from "./components/SettingsPanel";
+import { getSources, saveSources } from "./services/db";
 import {
   Search,
   Settings as SettingsIcon,
@@ -29,10 +30,8 @@ export default function App() {
     "nexusgrid_settings",
     DEFAULT_SETTINGS,
   );
-  const [sources, setSources] = useLocalStorage<Source[]>(
-    "nexusgrid_sources",
-    [],
-  );
+  const [sources, setSources] = useState<Source[]>([]);
+  const [isSourcesLoaded, setIsSourcesLoaded] = useState(false);
   const [allData, setAllData] = useState<DownloadItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSourceId, setActiveSourceId] = useState<string>("all");
@@ -46,6 +45,42 @@ export default function App() {
   );
 
   const t = TRANSLATIONS[settings.language];
+
+  // Load sources from IndexedDB on mount
+  useEffect(() => {
+    const loadSources = async () => {
+      try {
+        // Try to migrate from localStorage first
+        const legacySources = localStorage.getItem("nexusgrid_sources");
+        let initialSources: Source[] = [];
+
+        if (legacySources) {
+          initialSources = JSON.parse(legacySources);
+          // Save to IndexedDB and remove from localStorage
+          await saveSources(initialSources);
+          localStorage.removeItem("nexusgrid_sources");
+        } else {
+          initialSources = await getSources();
+        }
+
+        setSources(initialSources);
+      } catch (error) {
+        console.error("Error loading sources:", error);
+      } finally {
+        setIsSourcesLoaded(true);
+      }
+    };
+    loadSources();
+  }, []);
+
+  // Save sources to IndexedDB whenever they change
+  useEffect(() => {
+    if (isSourcesLoaded) {
+      saveSources(sources).catch((err) =>
+        console.error("Error saving sources:", err),
+      );
+    }
+  }, [sources, isSourcesLoaded]);
 
   // Scroll listener for mobile header
   useEffect(() => {
@@ -117,8 +152,10 @@ export default function App() {
   }, [sources, fetchSource]);
 
   useEffect(() => {
-    fetchAll();
-  }, [sources.length]); // Only refetch when sources are added/removed
+    if (isSourcesLoaded) {
+      fetchAll();
+    }
+  }, [sources.length, isSourcesLoaded]); // Only refetch when sources are added/removed or initially loaded
 
   const handleRefresh = async (id: string) => {
     const source = sources.find((s) => s.id === id);
