@@ -237,11 +237,11 @@ export default function App() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-100 bg-base-100 flex flex-col items-center justify-center gap-4"
           >
-            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-primary-content shadow-2xl shadow-primary/20 animate-bounce">
-              <LayoutGrid size={32} />
+            <div className="size-22 bg-primary rounded-2xl flex items-center justify-center text-primary-content shadow-2xl shadow-primary/20 animate-bounce">
+              <img src="/logo.png" loading="eager" className="size-16" />
             </div>
             <div className="flex flex-col items-center gap-1">
-              <h2 className="text-xl font-black tracking-tighter">
+              <h2 className="text-2xl font-black tracking-tighter">
                 {t.appName}
               </h2>
               <span className="loading loading-dots loading-md text-primary"></span>
