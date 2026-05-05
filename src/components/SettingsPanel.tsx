@@ -155,7 +155,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-base-100 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-base-300 flex flex-col h-[600px] max-h-[90vh]">
+      <div className="bg-base-100 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-base-300 flex flex-col h-150 max-h-[90vh]">
         <div className="p-4 border-b border-base-300 flex justify-between items-center bg-base-200 shrink-0">
           <div className="flex items-center gap-2 font-bold">
             <SettingsIcon size={18} />

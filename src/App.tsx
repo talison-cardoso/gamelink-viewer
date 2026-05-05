@@ -235,7 +235,7 @@ export default function App() {
           <motion.div
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-base-100 flex flex-col items-center justify-center gap-4"
+            className="fixed inset-0 z-100 bg-base-100 flex flex-col items-center justify-center gap-4"
           >
             <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-primary-content shadow-2xl shadow-primary/20 animate-bounce">
               <LayoutGrid size={32} />
@@ -252,7 +252,7 @@ export default function App() {
 
       {/* Header */}
       <header
-        className={`sticky top-0 z-40 bg-base-100/80 backdrop-blur-md border-b border-base-300 transition-all duration-300 ${scrolled ? "py-1 shadow-md" : "py-2 sm:py-3"}`}
+        className={`sticky top-0 z-40 bg-base-100/95 backdrop-blur-md border-b border-base-300 transition-all duration-300 ${scrolled ? "py-1 shadow-lg" : "py-2 sm:py-3"}`}
       >
         <div
           className={`container mx-auto px-4 flex flex-row gap-2 sm:gap-4 items-center justify-between ${containerClass}`}
@@ -260,9 +260,11 @@ export default function App() {
           <div
             className={`flex items-center gap-2 sm:gap-3 transition-all duration-300 ${scrolled ? "opacity-100" : "opacity-100"}`}
           >
-            <div className="size-8 sm:size-10 mr-1 bg-primary rounded-lg sm:rounded-xl flex items-center justify-center text-primary-content shadow-lg shadow-primary/20 shrink-0">
-              <LayoutGrid className="sm:size-6 size-4" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="GameLink Viewer"
+              className="size-8 sm:size-10 mr-1 sm:mr-0"
+            />
             <div className="hidden lg:block">
               <h1 className="text-xl font-black tracking-tighter leading-none">
                 {t.appName}
@@ -277,13 +279,13 @@ export default function App() {
             className={`flex-1 max-w-2xl relative group transition-all duration-300`}
           >
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/50 transition-colors group-focus-within:text-red-400"
+              className="absolute left-3 top-1/2 z-10 -translate-y-1/2 text-neutral-content transition-colors group-focus-within:text-primary"
               size={16}
             />
             <input
               type="text"
               placeholder={t.search}
-              className="input input-sm sm:input-md w-full pl-9 sm:pl-10 transition-all bg-base-200/50 border-none focus:bg-base-200"
+              className="input input-sm sm:input-md w-full pl-8 sm:pl-10 transition-all bg-base-200 border-base-300/50 outline-primary focus:border-primary/50"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -415,7 +417,7 @@ export default function App() {
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed bottom-6 left-6 right-6 md:left-auto md:w-[450px] z-50"
+            className="fixed bottom-6 left-6 right-6 md:left-auto md:w-md z-50"
           >
             <div className="alert bg-yellow-200 text-yellow-900 border-none shadow-2xl p-6 relative overflow-hidden rounded-3xl group cursor-default">
               <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none transition-transform duration-700 ease-out group-hover:scale-110 group-hover:rotate-3">
